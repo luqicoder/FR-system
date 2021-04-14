@@ -1,1 +1,1 @@
-1. window.py 窗体类
+window.py 窗体类
