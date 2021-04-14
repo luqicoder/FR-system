@@ -56,7 +56,7 @@ def get_cropImage(face_landmarks, img_path="images/face_test.jpg", mode=1)
 
 可以直接运行本文件得到如下结果
 
-![affine](../images/affine.jpg)
+![affine](images/affine.jpg)
 
 ### featureExtraction.py
 
