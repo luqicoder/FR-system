@@ -3,7 +3,10 @@ import struct
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter import Menu
+
+import cv2
 from PIL import Image, ImageTk
+from face_recognition import face_recognition
 
 
 class MainWindows(tk.Tk):
@@ -27,6 +30,8 @@ class MainWindows(tk.Tk):
         self.photo_libs = []  # 本地图片库
         self.feature_libs = []  # 本地特征向量库
         self.lib_path = './images/libs'  # 本地库文件路径
+
+        self.face_recog = face_recognition()
 
         self.update_treeview()
 
@@ -59,8 +64,8 @@ class MainWindows(tk.Tk):
         btn2.grid(column=0, row=2, sticky='W')
         label3 = tk.Label(mighty, text='相似度(一般70%以上可以表示为同一个人):')
         label3.grid(column=0, row=3, sticky='W')
-        name = tk.StringVar()
-        name_entered = ttk.Entry(mighty, width=12, textvariable=name)
+        self.name = tk.StringVar()
+        name_entered = ttk.Entry(mighty, width=12, textvariable=self.name)
         name_entered.grid(column=1, row=3, sticky='W')  # align left/West
 
     def init_tab2(self):
@@ -75,8 +80,8 @@ class MainWindows(tk.Tk):
         btn2_res.grid(column=0, row=2, sticky='W')
         label_res = tk.Label(mighty2, text='识别对象名：')
         label_res.grid(column=0, row=3, sticky='W')
-        name2 = tk.StringVar()
-        name_entered2 = ttk.Entry(mighty2, width=12, textvariable=name2)
+        self.name2 = tk.StringVar()
+        name_entered2 = ttk.Entry(mighty2, width=12, textvariable=self.name2)
         name_entered2.grid(column=1, row=3, sticky='W')  # align left/West
 
     def init_tab3(self):
@@ -135,13 +140,36 @@ class MainWindows(tk.Tk):
         self.show_img([self.label1, self.label2], self.select_file(), 2)
 
     def get_result1(self):
-        pass
+        if len(self.selected_files) < 2:
+            return
+
+        img_path1 = self.selected_files[0]
+        img_path2 = self.selected_files[1]
+        # 计算两张图片的余弦相似度
+        v1 = self.face_recog.get_single_feature_vector(img_path1)
+        v2 = self.face_recog.get_single_feature_vector(img_path2)
+        res = self.face_recog.cos_sim(v1, v2).tolist()[0][0]
+        res = format(res * 100, '.2f')
+        # name.configure(text=str(res[0][0]))
+        self.name.set(res + '%')
 
     def select_btn_tab2(self):
         self.show_img([self.label_rec], self.select_file())
 
     def get_result2(self):
-        pass
+        if len(self.selected_files) >= 1:
+            cur_fea = self.face_recog.get_single_feature_vector(self.selected_files[0])
+            max_value = 0
+            name = ''
+            features_len = len(self.feature_libs)
+            for i in range(features_len):
+                cur_cos = self.face_recog.cos_sim(self.feature_libs[i][1], cur_fea)
+                if cur_cos > max_value:
+                    max_value = cur_cos
+                    name = self.feature_libs[i][0]
+            if max_value < 0.7:
+                name = '未识别'
+            self.name2.set(name.split('\\')[-1])
 
     def get_lib(self, suffix='png'):
         ret = []
@@ -158,7 +186,26 @@ class MainWindows(tk.Tk):
         return ret
 
     def add_data(self):
-        pass
+        files = self.select_file()
+        for img_path in files:
+            fea = self.face_recog.get_single_feature_vector(img_path)
+            save_name = img_path.split('/')[-1].split('.')[0]
+            save_name_fea = '.\\images\\libs\\' + save_name + '.fea'
+            save_name_img = '.\\images\\libs\\' + save_name + '.png'
+
+            features_points, _ = self.face_recog.get_landmarkAndrect(img_path)
+            crop_img = self.face_recog.get_cropImage(features_points[0], img_path)
+            cv2.imwrite(save_name_img, crop_img)
+            # cv.imshow("1", crop_img)
+            # cv.waitKey(0)
+            # 参考：https://blog.csdn.net/reyyy/article/details/108223977
+            v_size = len(fea)  # 获取列表的长度
+            fmt = str(v_size) + 'd'
+            with open(save_name_fea, 'wb') as binfile:
+                data = struct.pack(fmt, *fea)
+                binfile.write(data)
+
+        self.update_treeview()
 
     # 删除treeview视图中的项，本地数据未修改（待添加）
     def delete_cur_treeview(self):
