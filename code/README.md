@@ -44,7 +44,7 @@ def get_landmarkAndrect(image_path='./images/0001.png')
 
 可以直接运行本文件得到如下结果
 
-![person7_dect](../images/person7_dect.jpg)
+![person7_dect](images/person7_dect.jpg)
 
 ### affineTrans.py
 
