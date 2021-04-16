@@ -9,3 +9,7 @@
 
 **开发环境**：
 1. python1.6.0+tensorflow 1.12.0
+
+参考：
+
+1. https://github.com/wangbm/MTCNN-Tensorflow
