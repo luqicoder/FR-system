@@ -13,3 +13,4 @@
 参考：
 
 1. https://github.com/wangbm/MTCNN-Tensorflow
+2. https://github.com/deepinsight/insightface
