@@ -8,7 +8,7 @@
 演示：https://www.bilibili.com/video/BV1Zi4y1P7iq/
 
 **开发环境**：
-1. python1.6.0+tensorflow 1.12.0
+1. python3.6.0+tensorflow 1.12.0
 
 参考：
 
